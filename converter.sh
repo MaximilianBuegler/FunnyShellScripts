@@ -4,7 +4,7 @@
 #
 #converts all videos to a maximum resoltion of 720p
 #converts all videos to libx264 with constant rate factor CRF 22 at Preset Medium
-#converts all stereo audio tracks to mp3 192k unless already mp3
+#converts all stereo (or anything that is != 6 channels) audio tracks to mp3 192k unless already mp3
 #converts all 6 channel audio tracks to ac3 640k unless already ac3
 #copies all subtitle streams
 #strips all metadata, except chapters
