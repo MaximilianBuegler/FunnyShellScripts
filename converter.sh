@@ -16,47 +16,46 @@ outputpath="conv/"
 
 function getStreamLine()
 {
-codetype=$1
-codecname=$2
-channels=$3
-language=$4
-audiocounter=$5
-subtitlecounter=$6
+	codetype=$1
+	codecname=$2
+	channels=$3
+	language=$4
+	audiocounter=$5
+	subtitlecounter=$6
 	case $codectype in
 		"audio")
-                        case $codecname in
-	                        "mp3")
-                                        echo copying $codecname audio track with $channels channels >&2
-                                        echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
-                                ;;
-                                "ac3")
-                                        if [ $channels != "6" ]
-                                        then
-                                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
-                                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
-                                        else
-                                                echo copying $codecname audio track with $channels channels >&2
-                                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
-                                        fi
-	                        ;;
-        	                *)
-                                        if [ $channels != "6" ]
-                                        then
-                                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
-                                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
-                                        else
-                                                echo encoding $codecname audio track with $channels channels to 640k ac3 >&2
-                                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter ac3 -b:a:$audiocounter 640k
-                                        fi
-                                ;;
-                        esac
-                        ;;
+		        case $codecname in
+		                "mp3")
+		                        echo copying $codecname audio track with $channels channels >&2
+		                        echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
+		                ;;
+		                "ac3")
+		                        if [ $channels != "6" ]
+		                        then
+		                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
+		                        else
+		                                echo copying $codecname audio track with $channels channels >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
+		                        fi
+		                ;;
+			        *)
+		                        if [ $channels != "6" ]
+		                        then
+		                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
+		                        else
+		                                echo encoding $codecname audio track with $channels channels to 640k ac3 >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter ac3 -b:a:$audiocounter 640k
+		                        fi
+		                ;;
+		        esac
+		        ;;
 		"subtitle")
 			echo copying $codecname subtitle >&2
 			echo -map 0:s:$subtitlecounter -metadata:s:s:$subtitlecounter language=$language -c:s:$subtitlecounter copy
 		;;
-        esac
-
+	esac
 }
 
 for path in "$@"
@@ -117,6 +116,7 @@ do
                                         subtitlecounter=$(($subtitlecounter + 1))
                                 ;;
 			esac
+			language="und"
 			state=0
 		fi
 	done
