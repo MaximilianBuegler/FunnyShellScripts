@@ -1,6 +1,6 @@
 #!/bin/bash
 
-outputpath="/srv/sabnzbd/complete/conv/"
+outputpath="conv/"
 
 function getStreamLine()
 {
