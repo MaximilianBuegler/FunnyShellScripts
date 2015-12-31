@@ -1,5 +1,17 @@
 #!/bin/bash
 
+#converts a video or a list of videos to the specified outputpath
+#
+#converts all videos to a maximum resoltion of 720p
+#converts all videos to libx264 with constant rate factor CRF 22 at Preset Medium
+#converts all stereo audio tracks to mp3 192k unless already mp3
+#converts all 6 channel audio tracks to ac3 640k unless already ac3
+#copies all subtitle streams
+#strips all metadata, except chapters
+#sets metadata title to filename without extension
+#copies over all language tags for audio and subtitle streams
+
+
 outputpath="conv/"
 
 function getStreamLine()
@@ -43,7 +55,7 @@ subtitlecounter=$6
                                         ;;
 					"subtitle")
 						echo copying $codecname subtitle >&2
-						echo -map 0:s:$subtitlecounter -c:s:$subtitlecounter copy
+						echo -map 0:s:$subtitlecounter -metadata:s:s:$subtitlecounter language=$language -c:s:$subtitlecounter copy
 						;;
                                 esac
 
@@ -80,9 +92,12 @@ do
 						channels=$(echo $a | cut -d"=" -f2)
                                                 ;;
 					"width")
-						width=$(echo $a | cut -d"=" -f2)
+						if [ $codectype == "video" ]
+							then
+								width=$(echo $a | cut -d"=" -f2)
+							fi
 						;;
-					"TAG:language")
+					"TAG:language"|"TAG:LANGUAGE")
 						language=$(echo $a | cut -d"=" -f2)
 						;;
 					"index")
@@ -109,7 +124,6 @@ do
 	done
 	ffmpegcommand="$ffmpegcommand $(getStreamLine $codectype $codecname $channels $language $audiocounter $subtitlecounter)"
 	metadatamodifier="-map_metadata -1 -map_chapters 0"
-	echo $metadatamodifier
 	if [ $width -gt 1280 ]
 		then
 		        echo ffmpeg -i "$path" $metadatamodifier -metadata title="${filename%.*}" -map 0:v:0 -vf "scale='min(iw,1280)':'trunc(ow/a/2)*2'" -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputhpath}$filename" 
