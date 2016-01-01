@@ -2,9 +2,10 @@
 
 #converts a video or a list of videos to the specified outputpath
 #
+#converts all videos to mkv
 #converts all videos to a maximum resoltion of 720p
 #converts all videos to libx264 with constant rate factor CRF 22 at Preset Medium
-#converts all stereo (or anything that is != 6 channels) audio tracks to mp3 192k unless already mp3
+#converts all stereo (or anything that is != 6 channels) audio tracks to mp3 192k unless already mp3 or ac3
 #converts all 6 channel audio tracks to ac3 640k unless already ac3
 #copies all subtitle streams
 #strips all metadata, except chapters
@@ -30,20 +31,14 @@ function getStreamLine()
 		                        echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
 		                ;;
 		                "ac3")
-		                        if [ $channels != "6" ]
-		                        then
-		                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
-		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
-		                        else
-		                                echo copying $codecname audio track with $channels channels >&2
-		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
-		                        fi
+	                                echo copying $codecname audio track with $channels channels >&2
+	                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
 		                ;;
 			        *)
 		                        if [ $channels != "6" ]
 		                        then
-		                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
-		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
+		                                echo encoding $codecname audio track with $channels channels to 320k mp3 >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 320k
 		                        else
 		                                echo encoding $codecname audio track with $channels channels to 640k ac3 >&2
 		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter ac3 -b:a:$audiocounter 640k
@@ -63,6 +58,7 @@ do
     echo
     echo PROCESSING $path
     filename=$(echo "$path" | grep -oP "[^/]*$")
+    videoname=${filename%.*}
     ffmpegcommand=""
 
     audiocounter=0
@@ -98,6 +94,13 @@ do
 					language=$(echo $a | cut -d"=" -f2)
 				;;
 				"index")
+					if [ $(echo $a | cut -d"=" -f2) -eq 0 ]
+					then
+						ffmpegcommand=""
+						audiocounter=0
+						subtitlecounter=0
+						codecname=-2
+					fi
 					if [ $codecname != "-2" ]
 					then
 						state=1
@@ -124,11 +127,12 @@ do
 	metadatamodifier="-map_metadata -1 -map_chapters 0"
 	if [ $width -gt 1280 ]
 	then
-	        echo ffmpeg -i "$path" $metadatamodifier -metadata title="${filename%.*}" -map 0:v:0 -vf "scale='min(iw,1280)':'trunc(ow/a/2)*2'" -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputhpath}$filename" 
-	        ffmpeg -i "$path" $metadatamodifier -metadata title="${filename%.*}" -map 0:v:0 -vf "scale='min(iw,1280)':'trunc(ow/a/2)*2'" -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputpath}$filename" </dev/null 
+		echo scaling video from width $width to width 1280
+	        echo ffmpeg -i \"$path\" $metadatamodifier -metadata title=\"$videoname\" -map 0:v:0 -vf "scale='min(iw,1280)':'trunc(ow/a/2)*2'" -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand \"${outputpath}$videoname.mkv\" 
+	        ffmpeg -i "$path" $metadatamodifier -metadata title="$videoname" -map 0:v:0 -vf "scale='min(iw,1280)':'trunc(ow/a/2)*2'" -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputpath}$videoname.mkv" </dev/null 
 	else
-                echo ffmpeg -i "$path" $metadatamodifier -metadata title="${filename%.*}" -map 0:v:0 -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputhpath}$filename" 
-                ffmpeg -i "$path" $metadatamodifier -metadata title="${filename%.*}" -map 0:v:0 -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputpath}$filename" </dev/null 
+                echo ffmpeg -i \"$path\" $metadatamodifier -metadata title=\"$videoname\" -map 0:v:0 -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand \"${outputpath}$videoname.mkv\" 
+                ffmpeg -i "$path" $metadatamodifier -metadata title="$videoname" -map 0:v:0 -c:v:0 libx264 -preset medium -crf 22 $ffmpegcommand "${outputpath}$videoname.mkv" </dev/null 
 	fi )
 
 done
