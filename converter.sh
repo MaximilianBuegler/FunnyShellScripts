@@ -15,6 +15,7 @@
 #converts all stereo (or anything that is != 6 channels) audio tracks to mp3 192k unless already mp3 or ac3
 #converts all 6 channel audio tracks to ac3 640k unless already ac3
 #copies all subtitle streams
+#drops dvb_teletext subtitles because of incompatibility
 #strips all metadata, except chapters
 #sets metadata title to filename without extension
 #copies over all language tags for audio and subtitle streams
@@ -57,8 +58,13 @@ function getStreamLine()
 		        esac
 		        ;;
 		"subtitle")
-			echo copying $codecname subtitle >&2
-			echo -map 0:s:$subtitlecounter -metadata:s:s:$subtitlecounter language=$language -c:s:$subtitlecounter copy
+			if [ $codecname == "dvb_teletext" ]
+			then
+				echo dropping $codecname subtitle because it is incompatible >&2
+			else
+				echo copying $codecname subtitle >&2
+				echo -map 0:s:$subtitlecounter -metadata:s:s:$subtitlecounter language=$language -c:s:$subtitlecounter copy
+			fi
 		;;
 	esac
 }
