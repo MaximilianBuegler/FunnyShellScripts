@@ -3,6 +3,11 @@
 #converts a video or a list of videos to the specified outputpath
 #videos supplied by parameters
 #
+#Tested with:
+#   ffmpeg version N-75480-ge859a3c
+#   ffmpeg version 2.6.2
+#   ffmpeg version 2.8.3
+#
 #Example: ./converter.sh *.mkv
 #
 #Input files should already have proper naming for correct metadata of output
