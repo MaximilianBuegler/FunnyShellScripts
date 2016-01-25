@@ -140,10 +140,13 @@ do
 					channels=$(echo $a | cut -d"=" -f2)
                                 ;;
 				"width")
-					if [ $codectype == "video" ] #Only the width of the video stream is of interest
-					then
-						width=$(echo $a | cut -d"=" -f2)
-					fi
+                                        if [ $codectype == "video" ] #Only the width of the video stream is of interest
+                                        then
+                                                if [ $width -lt 0 ] #Only the first video stream's width is taken into account
+                                                then
+                                                        width=$(echo $a | cut -d"=" -f2)
+                                                fi
+                                        fi
 				;;
 				"TAG:language"|"TAG:LANGUAGE")
 					language=$(echo $a | cut -d"=" -f2)
