@@ -26,7 +26,7 @@
 #copies over all language tags for audio and subtitle streams
 
 #Path where converted files are stored
-outputpath="conv/"
+outputpath="/srv/sabnzbd/complete/conv/"
 
 
 #get the ffmpeg codec line for a given stream
@@ -51,10 +51,10 @@ function getStreamLine()
 	                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter copy
 		                ;;
 			        *)
-		                        if [ $channels != "6" ]
+		                        if [ "$channels" \< "6" ]
 		                        then
-		                                echo encoding $codecname audio track with $channels channels to 320k mp3 >&2
-		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 320k
+		                                echo encoding $codecname audio track with $channels channels to 192k mp3 >&2
+		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter libmp3lame -b:a:$audiocounter 192k
 		                        else
 		                                echo encoding $codecname audio track with $channels channels to 640k ac3 >&2
 		                                echo -map 0:a:$audiocounter -metadata:s:a:$audiocounter language=$language -c:a:$audiocounter ac3 -b:a:$audiocounter 640k
@@ -102,7 +102,7 @@ do
     language="und"
 
     #Width of videostream
-    width=1280
+    width=-1
 
     #State to tell whether the first stream data is in
     state=0
@@ -140,13 +140,13 @@ do
 					channels=$(echo $a | cut -d"=" -f2)
                                 ;;
 				"width")
-                                        if [ $codectype == "video" ] #Only the width of the video stream is of interest
-                                        then
-                                                if [ $width -lt 0 ] #Only the first video stream's width is taken into account
-                                                then
-                                                        width=$(echo $a | cut -d"=" -f2)
-                                                fi
-                                        fi
+					if [ $codectype == "video" ] #Only the width of the video stream is of interest
+					then
+						if [ $width -lt 0 ]
+						then
+							width=$(echo $a | cut -d"=" -f2)
+						fi
+					fi
 				;;
 				"TAG:language"|"TAG:LANGUAGE")
 					language=$(echo $a | cut -d"=" -f2)
@@ -199,6 +199,7 @@ do
 	metadatamodifier="-map_metadata -1 -map_chapters 0"
 
 	#Does the video have higher resolution thatn 720p?
+echo $width
 	if [ $width -gt 1280 ]
 	then
 		echo scaling video from width $width to width 1280
